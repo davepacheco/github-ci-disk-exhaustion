@@ -1,0 +1,20 @@
+name: Rust
+
+on: [ push ]
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-18.04, macos-11 ]
+    steps:
+    # actions/checkout@v2
+    - uses: actions/checkout@28c7f3d2b5162b5ddd3dfd9a45aa55eaf396478b
+    - name: Report disk space
+      run: |
+        echo "Disk space:"
+        df -h
+    - name: Build and run
+      run: cargo run
