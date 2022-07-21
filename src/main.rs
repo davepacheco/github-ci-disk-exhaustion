@@ -19,17 +19,29 @@ fn main() -> Result<(), anyhow::Error> {
     loop {
         let filename = format!("{}/{}-{}", DIR_NAME, FILE_BASE, which);
         which = which + 1;
-        let _ = std::fs::write(&filename, &buffer)
-            .with_context(|| format!("write {:?}", &filename))?;
+        let result = std::fs::write(&filename, &buffer)
+            .with_context(|| format!("write {:?}", &filename));
         let now = std::time::Instant::now();
         let elapsed = now.duration_since(last);
-        println!(
-            "{} wrote {} bytes to {} (took {:5.3}s)",
-            Utc::now().to_rfc3339(),
-            buffer.len(),
-            &filename,
-            elapsed.as_secs_f64(),
-        );
-        last = now;
+        if let Err(error) = result {
+            println!(
+                "{} FAILED writing {} bytes to {} (failed write took {:5.3}s): {:#}",
+                Utc::now().to_rfc3339(),
+                buffer.len(),
+                &filename,
+                elapsed.as_secs_f64(),
+                error,
+            );
+            return Err(error);
+        } else {
+            println!(
+                "{} wrote {} bytes to {} (took {:5.3}s)",
+                Utc::now().to_rfc3339(),
+                buffer.len(),
+                &filename,
+                elapsed.as_secs_f64(),
+            );
+            last = now;
+        }
     }
 }
